@@ -17,6 +17,7 @@ func NewProducer(conn *nats.Conn, subject string) *Producer {
 }
 
 func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *map[string]string) (string, error) {
+	defer p.Conn.Flush()
 	if messageAttributes == nil {
 		err := p.Conn.Publish(p.Subject, data)
 		return "", err

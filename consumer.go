@@ -2,10 +2,10 @@ package nats
 
 import (
 	"context"
-	"net/http"
-
 	"github.com/common-go/mq"
 	"github.com/nats-io/nats.go"
+	"net/http"
+	"runtime"
 )
 
 type Consumer struct {
@@ -29,14 +29,18 @@ func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {
 			}
 			caller.Call(ctx, message, nil)
 		})
+		c.Conn.Flush()
+		runtime.Goexit()
 	} else {
 		c.Conn.Subscribe(c.Subject, func(msg *nats.Msg) {
 			message := &mq.Message{
-				Data:       msg.Data,
-				Raw:        msg,
+				Data: msg.Data,
+				Raw:  msg,
 			}
 			caller.Call(ctx, message, nil)
 		})
+		c.Conn.Flush()
+		runtime.Goexit()
 	}
 }
 

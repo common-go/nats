@@ -2,11 +2,8 @@ package nats
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"io/ioutil"
+	"github.com/nats-io/nats.go"
 	"net"
-	"net/http"
 	"time"
 )
 
@@ -30,26 +27,18 @@ func (s *HttpHealthCheck) Name() string {
 
 func (s *HttpHealthCheck) Check(ctx context.Context) (map[string]interface{}, error) {
 	res := make(map[string]interface{})
-	client := http.Client{
-		Timeout: s.timeout,
-		// never follow redirects
-		CheckRedirect: func(*http.Request, []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
+	dialer := &net.Dialer{Timeout: s.timeout,DualStack: true}
+	opts := &nats.Options{
+		Servers: []string{s.url},
+		Dialer:  dialer,
 	}
-	resp, err := client.Get(s.url)
-	if e, ok := err.(net.Error); ok && e.Timeout() {
-		return res, fmt.Errorf("time out: %w", e)
-	} else if err != nil {
-		return res, err
+	conn, err := opts.Connect()
+	if err != nil {
+		return nil, err
 	}
-	_, _ = io.Copy(ioutil.Discard, resp.Body)
-	_ = resp.Body.Close()
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return res, nil
-	} else {
-		return res, fmt.Errorf("status code is: %d", resp.StatusCode)
-	}
+	conn.Close()
+	res["status"] = "success"
+	return res, nil
 }
 
 func (s *HttpHealthCheck) Build(ctx context.Context, data map[string]interface{}, err error) map[string]interface{} {
