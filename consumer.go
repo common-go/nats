@@ -18,6 +18,14 @@ func NewConsumer(conn *nats.Conn, subject string, header bool) *Consumer {
 	return &Consumer{conn, subject, header}
 }
 
+func NewConsumerByConfig(ctx context.Context, c ConsumerConfig) (*Consumer, error) {
+	conn, err := nats.Connect(c.Connection.Url, c.Connection.Options)
+	if err != nil {
+		return nil, err
+	}
+	return NewConsumer(conn, c.Subject, c.Header), nil
+}
+
 func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {
 	if c.Header {
 		c.Conn.Subscribe(c.Subject, func(msg *nats.Msg) {

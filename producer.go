@@ -8,12 +8,20 @@ import (
 )
 
 type Producer struct {
-	Conn *nats.Conn
+	Conn    *nats.Conn
 	Subject string
 }
 
 func NewProducer(conn *nats.Conn, subject string) *Producer {
 	return &Producer{conn, subject}
+}
+
+func NewProducerByConfig(ctx context.Context, p ProducerConfig) (*Producer, error) {
+	conn, err := nats.Connect(p.Connection.Url, p.Connection.Options)
+	if err != nil {
+		return nil, err
+	}
+	return NewProducer(conn, p.Subject), nil
 }
 
 func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *map[string]string) (string, error) {
@@ -25,9 +33,9 @@ func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *
 		header := MapToHeader(messageAttributes)
 		var msg = &nats.Msg{
 			Subject: p.Subject,
-			Data: data,
-			Reply: "",
-			Header: *header,
+			Data:    data,
+			Reply:   "",
+			Header:  *header,
 		}
 		err := p.Conn.PublishMsg(msg)
 		return "", err
@@ -35,7 +43,7 @@ func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *
 }
 
 func MapToHeader(messageAttributes *map[string]string) *http.Header {
-	if messageAttributes == nil || len (*messageAttributes) == 0 {
+	if messageAttributes == nil || len(*messageAttributes) == 0 {
 		return nil
 	}
 	header := &http.Header{}
