@@ -18,12 +18,21 @@ func NewConsumer(conn *nats.Conn, subject string, header bool) *Consumer {
 	return &Consumer{conn, subject, header}
 }
 
-func NewConsumerByConfig(ctx context.Context, c ConsumerConfig) (*Consumer, error) {
-	conn, err := nats.Connect(c.Connection.Url, c.Connection.Options)
-	if err != nil {
-		return nil, err
+func NewConsumerByConfig(c ConsumerConfig) (*Consumer, error) {
+	if c.Connection.Retry.Retry1 <= 0 {
+		conn, err := nats.Connect(c.Connection.Url, c.Connection.Options)
+		if err != nil {
+			return nil, err
+		}
+		return NewConsumer(conn, c.Subject, c.Header), nil
+	} else {
+		durations := DurationsFromValue(c.Connection.Retry, "Retry", 9)
+		conn, err := NewConn(durations, c.Connection.Url, c.Connection.Options)
+		if err != nil {
+			return nil, err
+		}
+		return NewConsumer(conn, c.Subject, c.Header), nil
 	}
-	return NewConsumer(conn, c.Subject, c.Header), nil
 }
 
 func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {

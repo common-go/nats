@@ -2,9 +2,8 @@ package nats
 
 import (
 	"context"
-	"net/http"
-
 	"github.com/nats-io/nats.go"
+	"net/http"
 )
 
 type Producer struct {
@@ -15,15 +14,22 @@ type Producer struct {
 func NewProducer(conn *nats.Conn, subject string) *Producer {
 	return &Producer{conn, subject}
 }
-
-func NewProducerByConfig(ctx context.Context, p ProducerConfig) (*Producer, error) {
-	conn, err := nats.Connect(p.Connection.Url, p.Connection.Options)
-	if err != nil {
-		return nil, err
+func NewProducerByConfig(p ProducerConfig) (*Producer, error) {
+	if p.Connection.Retry.Retry1 <= 0 {
+		conn, err := nats.Connect(p.Connection.Url, p.Connection.Options)
+		if err != nil {
+			return nil, err
+		}
+		return NewProducer(conn, p.Subject), nil
+	} else {
+		durations := DurationsFromValue(p.Connection.Retry, "Retry", 9)
+		conn, err := NewConn(durations, p.Connection.Url, p.Connection.Options)
+		if err != nil {
+			return nil, err
+		}
+		return NewProducer(conn, p.Subject), nil
 	}
-	return NewProducer(conn, p.Subject), nil
 }
-
 func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *map[string]string) (string, error) {
 	defer p.Conn.Flush()
 	if messageAttributes == nil {
