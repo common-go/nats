@@ -7,27 +7,27 @@ import (
 	"time"
 )
 
-type HttpHealthCheck struct {
+type HttpHealthChecker struct {
 	name    string
 	url     string
 	timeout time.Duration
 }
 
-func NewHttpHealthCheck(name, url string, timeout time.Duration) *HttpHealthCheck {
-	return &HttpHealthCheck{name, url, timeout}
+func NewHealthCheckerWithTimeout(name, url string, timeout time.Duration) *HttpHealthChecker {
+	return &HttpHealthChecker{name: name, url: url, timeout: timeout}
 }
 
-func NewDefaultHttpHealthCheck(name, url string) *HttpHealthCheck {
-	return &HttpHealthCheck{name, url, 5 * time.Second}
+func NewHttpHealthChecker(name, url string) *HttpHealthChecker {
+	return &HttpHealthChecker{name: name, url: url, timeout: 4 * time.Second}
 }
 
-func (s *HttpHealthCheck) Name() string {
+func (s *HttpHealthChecker) Name() string {
 	return s.name
 }
 
-func (s *HttpHealthCheck) Check(ctx context.Context) (map[string]interface{}, error) {
+func (s *HttpHealthChecker) Check(ctx context.Context) (map[string]interface{}, error) {
 	res := make(map[string]interface{})
-	dialer := &net.Dialer{Timeout: s.timeout,DualStack: true}
+	dialer := &net.Dialer{Timeout: s.timeout, DualStack: true}
 	opts := &nats.Options{
 		Servers: []string{s.url},
 		Dialer:  dialer,
@@ -41,7 +41,7 @@ func (s *HttpHealthCheck) Check(ctx context.Context) (map[string]interface{}, er
 	return res, nil
 }
 
-func (s *HttpHealthCheck) Build(ctx context.Context, data map[string]interface{}, err error) map[string]interface{} {
+func (s *HttpHealthChecker) Build(ctx context.Context, data map[string]interface{}, err error) map[string]interface{} {
 	if err == nil {
 		return data
 	}
