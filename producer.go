@@ -30,7 +30,7 @@ func NewProducerByConfig(p ProducerConfig) (*Producer, error) {
 		return NewProducer(conn, p.Subject), nil
 	}
 }
-func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *map[string]string) (string, error) {
+func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes map[string]string) (string, error) {
 	defer p.Conn.Flush()
 	if messageAttributes == nil {
 		err := p.Conn.Publish(p.Subject, data)
@@ -48,12 +48,12 @@ func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes *
 	}
 }
 
-func MapToHeader(messageAttributes *map[string]string) *http.Header {
-	if messageAttributes == nil || len(*messageAttributes) == 0 {
+func MapToHeader(messageAttributes map[string]string) *http.Header {
+	if messageAttributes == nil || len(messageAttributes) == 0 {
 		return nil
 	}
 	header := &http.Header{}
-	for k, v := range *messageAttributes {
+	for k, v := range messageAttributes {
 		header.Add(k, v)
 	}
 	return header

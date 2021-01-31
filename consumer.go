@@ -35,7 +35,7 @@ func NewConsumerByConfig(c ConsumerConfig) (*Consumer, error) {
 	}
 }
 
-func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {
+func (c *Consumer) Consume(ctx context.Context, handle func(context.Context, *mq.Message, error) error) {
 	if c.Header {
 		c.Conn.Subscribe(c.Subject, func(msg *nats.Msg) {
 			attrs := HeaderToMap(msg.Header)
@@ -44,7 +44,7 @@ func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {
 				Attributes: attrs,
 				Raw:        msg,
 			}
-			caller.Call(ctx, message, nil)
+			handle(ctx, message, nil)
 		})
 		c.Conn.Flush()
 		runtime.Goexit()
@@ -54,7 +54,7 @@ func (c *Consumer) Consume(ctx context.Context, caller mq.ConsumerCaller) {
 				Data: msg.Data,
 				Raw:  msg,
 			}
-			caller.Call(ctx, message, nil)
+			handle(ctx, message, nil)
 		})
 		c.Conn.Flush()
 		runtime.Goexit()
