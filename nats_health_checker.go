@@ -13,7 +13,7 @@ type HttpHealthChecker struct {
 	timeout time.Duration
 }
 
-func NewHealthCheckerWithTimeout(name, url string, timeout time.Duration) *HttpHealthChecker {
+func NewHealthChecker(name, url string, timeout time.Duration) *HttpHealthChecker {
 	return &HttpHealthChecker{name: name, url: url, timeout: timeout}
 }
 
