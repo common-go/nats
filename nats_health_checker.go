@@ -13,11 +13,23 @@ type HttpHealthChecker struct {
 	timeout time.Duration
 }
 
-func NewHealthChecker(name, url string, timeout time.Duration) *HttpHealthChecker {
+func NewHttpHealthChecker(name, url string, timeouts ...time.Duration) *HttpHealthChecker {
+	var timeout time.Duration
+	if len(timeouts) >= 1 {
+		timeout = timeouts[0]
+	} else {
+		timeout = 4 * time.Second
+	}
 	return &HttpHealthChecker{name: name, url: url, timeout: timeout}
 }
 
-func NewHttpHealthChecker(name, url string) *HttpHealthChecker {
+func NewHealthChecker(url string, options ...string) *HttpHealthChecker {
+	var name string
+	if len(options) >= 1 && len(options[0]) > 0 {
+		name = options[0]
+	} else {
+		name = "nats"
+	}
 	return &HttpHealthChecker{name: name, url: url, timeout: 4 * time.Second}
 }
 
