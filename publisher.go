@@ -6,37 +6,37 @@ import (
 	"net/http"
 )
 
-type Producer struct {
+type Publisher struct {
 	Conn    *nats.Conn
 	Subject string
 }
 
-func NewProducer(conn *nats.Conn, subject string) *Producer {
-	return &Producer{conn, subject}
+func NewPublisher(conn *nats.Conn, subject string) *Publisher {
+	return &Publisher{conn, subject}
 }
-func NewProducerByConfig(p ProducerConfig) (*Producer, error) {
+func NewPublisherByConfig(p PublisherConfig) (*Publisher, error) {
 	if p.Connection.Retry.Retry1 <= 0 {
 		conn, err := nats.Connect(p.Connection.Url, p.Connection.Options)
 		if err != nil {
 			return nil, err
 		}
-		return NewProducer(conn, p.Subject), nil
+		return NewPublisher(conn, p.Subject), nil
 	} else {
 		durations := DurationsFromValue(p.Connection.Retry, "Retry", 9)
 		conn, err := NewConn(durations, p.Connection.Url, p.Connection.Options)
 		if err != nil {
 			return nil, err
 		}
-		return NewProducer(conn, p.Subject), nil
+		return NewPublisher(conn, p.Subject), nil
 	}
 }
-func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes map[string]string) (string, error) {
+func (p *Publisher) Publish(ctx context.Context, data []byte, attributes map[string]string) (string, error) {
 	defer p.Conn.Flush()
-	if messageAttributes == nil {
+	if attributes == nil {
 		err := p.Conn.Publish(p.Subject, data)
 		return "", err
 	} else {
-		header := MapToHeader(messageAttributes)
+		header := MapToHeader(attributes)
 		var msg = &nats.Msg{
 			Subject: p.Subject,
 			Data:    data,
@@ -48,12 +48,12 @@ func (p *Producer) Produce(ctx context.Context, data []byte, messageAttributes m
 	}
 }
 
-func MapToHeader(messageAttributes map[string]string) *http.Header {
-	if messageAttributes == nil || len(messageAttributes) == 0 {
+func MapToHeader(attributes map[string]string) *http.Header {
+	if attributes == nil || len(attributes) == 0 {
 		return nil
 	}
 	header := &http.Header{}
-	for k, v := range messageAttributes {
+	for k, v := range attributes {
 		header.Add(k, v)
 	}
 	return header

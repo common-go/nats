@@ -10,9 +10,9 @@ import (
 )
 
 type ConnConfig struct {
-	Url     string      `mapstructure:"url"`
-	Options nats.Option `mapstructure:"option"`
-	Retry   RetryConfig `mapstructure:"retry"`
+	Url     string      `mapstructure:"url" json:"url,omitempty" gorm:"column:url" bson:"url,omitempty" dynamodbav:"url,omitempty" firestore:"url,omitempty"`
+	Options nats.Option `mapstructure:"option" json:"option,omitempty" gorm:"column:option" bson:"option,omitempty" dynamodbav:"option,omitempty" firestore:"option,omitempty"`
+	Retry   RetryConfig `mapstructure:"retry" json:"retry,omitempty" gorm:"column:retry" bson:"retry,omitempty" dynamodbav:"retry,omitempty" firestore:"retry,omitempty"`
 }
 type RetryConfig struct {
 	Retry1 int64 `mapstructure:"1" json:"retry1,omitempty" gorm:"column:retry1" bson:"retry1,omitempty" dynamodbav:"retry1,omitempty" firestore:"retry1,omitempty"`
@@ -25,6 +25,7 @@ type RetryConfig struct {
 	Retry8 int64 `mapstructure:"8" json:"retry8,omitempty" gorm:"column:retry8" bson:"retry8,omitempty" dynamodbav:"retry8,omitempty" firestore:"retry8,omitempty"`
 	Retry9 int64 `mapstructure:"9" json:"retry9,omitempty" gorm:"column:retry9" bson:"retry9,omitempty" dynamodbav:"retry9,omitempty" firestore:"retry9,omitempty"`
 }
+
 func NewConn(retries []time.Duration, url string, options ...nats.Option) (*nats.Conn, error) {
 	if len(retries) == 0 {
 		return nats.Connect(url, options...)
