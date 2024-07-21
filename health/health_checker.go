@@ -1,9 +1,11 @@
-package nats
+package health
 
 import (
 	"context"
 	"net"
 	"time"
+	
+	"github.com/nats-io/nats.go"
 )
 
 type HealthChecker struct {

@@ -4,9 +4,9 @@ NATS is an open-source, lightweight, and high-performance messaging system desig
 - <b>Performance</b>: Low latency and high throughput. 
 - <b>Scalability</b>: Capable of handling millions of messages per second.
 - <b>Fault Tolerance</b>: Supports clustering for high availability.
-### Libraries for Google Pub/Sub
-- GO: [NATS](https://github.com/core-go/nats). Example is at [go-nats-sample](https://github.com/project-samples/go-nats-sample)
-- nodejs: [NATS](https://github.com/core-ts/nats). Example is at [nats-sample](https://github.com/typescript-tutorial/nats-sample)
+### Libraries for NATS
+- GO: [NATS](https://github.com/core-go/nats), to wrap and simplify [nats.go](https://github.com/nats-io/nats.go). Example is at [go-nats-sample](https://github.com/project-samples/go-nats-sample)
+- nodejs: [nats-plus](https://www.npmjs.com/package/nats-plus), to wrap and simplify [nats](https://www.npmjs.com/package/nats). Example is at [nats-sample](https://github.com/typescript-tutorial/nats-sample)
 
 #### A common flow to consume a message from a message queue
 ![A common flow to consume a message from a message queue](https://cdn-images-1.medium.com/max/800/1*Y4QUN6QnfmJgaKigcNHbQA.png)
